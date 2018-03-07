@@ -7,6 +7,7 @@ find_package(PkgConfig)
 set (LIBRARIES ${LIBRARIES}
     mosquitto
     pthread
+    json
     )
 
 add_executable (msgReciever ${SOURCES_common})
@@ -15,3 +16,5 @@ target_link_libraries(msgReciever ${LIBRARIES})
 target_include_directories(msgReciever PUBLIC)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/)
 install (TARGETS msgReciever DESTINATION bin)
+
+add_subdirectory(json)

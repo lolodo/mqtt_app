@@ -7,6 +7,7 @@
 pthread_t mqtt;
 char topic[30];
 
+extern void json_parse_message(char *s);
 static void print_usage(const char *prog)
 {
     printf("Usage: %s [options]\n", prog);
@@ -14,9 +15,10 @@ static void print_usage(const char *prog)
             "  -h --help                print help info \n");
 }
 
-static void parse_opts(int argc, char *argv[])
+static int parse_opts(int argc, char *argv[])
 {
     int c;
+    int ret = -1;
 
     while (1) {
         static const struct option lopts[] = {
@@ -34,6 +36,7 @@ static void parse_opts(int argc, char *argv[])
             case 't':
                 memcpy(topic, optarg, sizeof(optarg));
                 topic[sizeof(optarg)] = '\0';
+                ret = 0;
                 break;
 
             case '?':
@@ -41,17 +44,18 @@ static void parse_opts(int argc, char *argv[])
             default:
                 print_usage(argv[0]);
                 break;
-
         }
     }
 
+    return ret;
 }
 
 int pubsub_callback (char *message, int len)
 {
     if (message != NULL) {
-        printf("topic:%s, len:%d, message:%s\n", topic, len, message);
-    //    json_parse_message(message);
+        //printf("topic:%s, len:%d, message:%s\n", topic, len, message);
+        printf("len:%d, message:%s\n", len, message);
+        json_parse_message(message);
     }
 }
 
@@ -99,7 +103,12 @@ int main(int argc, char *argv[])
 {
     int ret = 0;
 
-    parse_opts(argc, argv);
+    ret = parse_opts(argc, argv);
+    if (ret) {
+        print_usage(argv[0]);
+        return ret;
+    }
+
     mosquitto_lib_init();
     ret = pthread_create(&mqtt, NULL, pubsub_func, NULL);
     if (ret) {
