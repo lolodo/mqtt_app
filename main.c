@@ -1,18 +1,56 @@
-#include <malloc.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <getopt.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <string.h>
+#include <getopt.h>
 #include <pthread.h>  
-#include <errno.h>
 #include <mosquitto.h>
 
 pthread_t mqtt;
+char topic[30];
+
+static void print_usage(const char *prog)
+{
+    printf("Usage: %s [options]\n", prog);
+    puts(   "  -t --topic               specify topics to subscribe\n"
+            "  -h --help                print help info \n");
+}
+
+static void parse_opts(int argc, char *argv[])
+{
+    int c;
+
+    while (1) {
+        static const struct option lopts[] = {
+            { "topic", 1, 0, 't' },
+            { "help", 0, 0, 'h' },
+            { NULL, 0, 0, 0 },
+        };
+
+        c = getopt_long(argc, argv, "t:h", lopts, NULL);
+
+        if (c == -1)
+            break;
+
+        switch (c) {
+            case 't':
+                memcpy(topic, optarg, sizeof(optarg));
+                topic[sizeof(optarg)] = '\0';
+                break;
+
+            case '?':
+            case 'h':
+            default:
+                print_usage(argv[0]);
+                break;
+
+        }
+    }
+
+}
+
 int pubsub_callback (char *message, int len)
 {
     if (message != NULL) {
-        printf("%s:%d len:%d message:%s\n", __func__, __LINE__, len, message);
+        printf("topic:%s, len:%d, message:%s\n", topic, len, message);
     //    json_parse_message(message);
     }
 }
@@ -37,7 +75,6 @@ void *pubsub_func(void *arg)
     int mid = 0;
     int rc;
     struct mosquitto *mosq;
-    char *topic = "avm/#";
 
     /* set mqtt */
     mosq = mosquitto_new("client", true, NULL);
@@ -62,7 +99,7 @@ int main(int argc, char *argv[])
 {
     int ret = 0;
 
-    //parse_opts(argc, argv);
+    parse_opts(argc, argv);
     mosquitto_lib_init();
     ret = pthread_create(&mqtt, NULL, pubsub_func, NULL);
     if (ret) {
