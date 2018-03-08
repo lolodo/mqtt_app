@@ -10,11 +10,11 @@ set (LIBRARIES ${LIBRARIES}
     json
     )
 
-add_executable (msgReciever ${SOURCES_common})
-target_link_libraries(msgReciever ${LIBRARIES})
+add_executable (msgReceiver ${SOURCES_common})
+target_link_libraries(msgReceiver ${LIBRARIES})
 
-target_include_directories(msgReciever PUBLIC)
+target_include_directories(msgReceiver PUBLIC)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/)
-install (TARGETS msgReciever DESTINATION bin)
+install (TARGETS msgReceiver DESTINATION bin)
 
 add_subdirectory(json)
